@@ -33,6 +33,7 @@ class VideoViewSet(ViewSet):
         )
 
     async def partial_update(self, request, pk=None):
+        """PATCH-allowed async-method to change video resolution."""
         video = await VideoModel.objects.aget(pk=pk)
 
         serializer = VideoResolutionSerializer(data=request.data)
@@ -46,10 +47,14 @@ class VideoViewSet(ViewSet):
             height=request.data['height']
 
         )
-
-        return Response(
-            data={'success': 'True'}
-        )
+        edited_video_file_name = f"{VIDEO_PATH}{file_name}_{request.data['width']}x{request.data['height']}.mp4"
+        edited_video = VideoModel(file=edited_video_file_name)
+        await edited_video.asave()
+        data = {
+            'success': 'True',
+            'edited_video_id': edited_video.id
+        }
+        return Response(data=data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         video = get_object_or_404(VideoModel, pk=pk)
