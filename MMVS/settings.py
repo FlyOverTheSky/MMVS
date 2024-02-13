@@ -1,9 +1,12 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-t+1r!gfwnb13)k)$ra=i@er*dol++77g-ad6$#*-@h(zia^cx%'
+SECRET_KEY = os.getenv('SECRET_KEY', "")
 
 DEBUG = True
 
@@ -54,25 +57,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'MMVS.wsgi.application'
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "postgres",
-#         "USER": "postgres",
-#         "PASSWORD": "user",
-#         "HOST": "127.0.0.1",
-#         "PORT": "5432",
-#     }
-# }
-
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", ""),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", ""),
+        "PORT": os.getenv("DB_PORT", ""),
     }
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -101,7 +95,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-VIDEO_PATH = 'videos/'
+VIDEO_PATH = os.getenv('VIDEO_PATH', "")
 
 LOGGING = {
     'version': 1,
