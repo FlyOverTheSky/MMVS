@@ -30,3 +30,7 @@ python manage.py runserver
 ### Документация
 - /swagger
 - /redoc
+
+### Выполненые задачи
+- Автодокументация в swagger и redoc формате
+- Логирование инструментами Django
