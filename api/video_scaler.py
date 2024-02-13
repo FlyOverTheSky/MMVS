@@ -3,17 +3,21 @@ import os
 
 
 async def start_process(process):
-    await process.communicate()
+    process.communicate()
 
 
-async def create_process(video_dir_path: str, file_name: str, output_video_resolution: str):
+async def create_process(video_dir_path: str, file_name: str, width: int, height: int):
     """file_name without .mp4, output_video_resolution exm:(1000:1000)."""
+    resolution = f"{str(width)}:{str(height)}"
+    input_file_path = video_dir_path + file_name + '.mp4'
+    output_file_path = video_dir_path + file_name + '_edited.mp4'
+    print(output_file_path)
     await start_process(
         ffmpeg
-        .input(os.path.join(video_dir_path, file_name, '.mp4'))
+        .input(input_file_path)
         .output(
-            os.path.join((video_dir_path, file_name, f'_{output_video_resolution}.mp4')),
-            vf=f'scale={output_video_resolution}'
+            os.path.join(output_file_path),
+            vf=f'scale={resolution}'
         )
-        .run_async(pipe_stdin=True, pipe_stdout=True)
+        .run_async()
     )

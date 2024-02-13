@@ -1,7 +1,9 @@
-from asgiref.sync import sync_to_async
+from adrf.viewsets import ViewSet
+
 
 import os.path
 
+from asgiref.sync import sync_to_async
 from rest_framework import viewsets, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -12,16 +14,16 @@ from api.serializers import VideoSerializer, VideoResolutionSerializer
 from api.video_scaler import create_process
 
 
-class VideoViewSet(viewsets.ModelViewSet):
+class VideoViewSet(ViewSet):
     queryset = VideoModel.objects.all()
     serializer_class = VideoSerializer
 
-    def create(self, request):
+    async def create(self, request):
         serializer = VideoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         video = VideoModel(**serializer.validated_data)
-        video.save()
+        await video.asave()
         data = {
             'id': video.id
         }
@@ -30,19 +32,19 @@ class VideoViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK
         )
 
-    @sync_to_async
-    def partial_update(self, request, pk=None):
-        video = get_object_or_404(VideoModel, pk=pk)
+    async def partial_update(self, request, pk=None):
+        video = await VideoModel.objects.aget(pk=pk)
 
         serializer = VideoResolutionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        output_video_resolution = f"{request.data['width']}:{request.data['height']}"
         file_name = video.file.name.removeprefix(VIDEO_PATH).removesuffix('.mp4')
-        create_process(
+        await create_process(
             video_dir_path=VIDEO_PATH,
             file_name=file_name,
-            output_video_resolution=output_video_resolution
+            width=request.data['width'],
+            height=request.data['height']
+
         )
 
         return Response(
