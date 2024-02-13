@@ -27,5 +27,5 @@ python manage.py runserver
 ```
 
 ### Документация
-/swagger
-/redoc
+- /swagger
+- /redoc
