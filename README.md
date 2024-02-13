@@ -25,3 +25,7 @@ python api/backend/manage.py migrate
 
 python manage.py runserver
 ```
+
+### Документация
+/swagger
+/redoc
