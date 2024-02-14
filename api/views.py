@@ -5,6 +5,7 @@ import os.path
 
 from asgiref.sync import sync_to_async
 from rest_framework import viewsets, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -34,22 +35,33 @@ class VideoViewSet(ViewSet):
 
     async def partial_update(self, request, pk=None):
         """PATCH-allowed async-method to change video resolution."""
-        video = await VideoModel.objects.aget(pk=pk)
+        try:
+            video = await VideoModel.objects.aget(pk=pk)
+            serializer = VideoResolutionSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        serializer = VideoResolutionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+            video.processing = True
+            video.processingSuccess = False
+            await video.asave()
+
+        except Exception as error:
+            raise ValidationError({'errors': str(error)})
 
         file_name = video.file.name.removeprefix(VIDEO_PATH).removesuffix('.mp4')
+
         await create_process(
             video_dir_path=VIDEO_PATH,
             file_name=file_name,
             width=request.data['width'],
-            height=request.data['height']
-
+            height=request.data['height'],
+            initial_video=video
         )
+
         edited_video_file_name = f"{VIDEO_PATH}{file_name}_{request.data['width']}x{request.data['height']}.mp4"
         edited_video = VideoModel(file=edited_video_file_name)
+
         await edited_video.asave()
+
         data = {
             'success': 'True',
             'edited_video_id': edited_video.id
@@ -64,6 +76,7 @@ class VideoViewSet(ViewSet):
             'processing': video.processing,
             'processingSuccess': video.processingSuccess,
         }
+
         return Response(
             data=data,
             status=status.HTTP_200_OK
