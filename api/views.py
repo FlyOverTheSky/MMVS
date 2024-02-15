@@ -20,6 +20,7 @@ class VideoViewSet(ViewSet):
     serializer_class = VideoSerializer
 
     async def create(self, request):
+        """Method to POST request to load video."""
         serializer = VideoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -69,6 +70,7 @@ class VideoViewSet(ViewSet):
         return Response(data=data, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
+        """Method to GET request video by id."""
         video = get_object_or_404(VideoModel, pk=pk)
         data = {
             'id': video.id,
@@ -83,6 +85,7 @@ class VideoViewSet(ViewSet):
         )
 
     def destroy(self, request, pk=None):
+        """Method to DELETE request video by id."""
         try:
             video = get_object_or_404(VideoModel, pk=pk)
             path = video.file.name
