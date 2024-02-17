@@ -95,4 +95,4 @@ venv.bak/
 
 .idea/
 videos/
-test_files/
+test_files/*
