@@ -6,6 +6,7 @@ import requests
 import json
 
 from dotenv import load_dotenv
+from rest_framework import status
 
 from rest_framework.test import APITestCase, APIRequestFactory
 
@@ -29,15 +30,11 @@ class VideoTestCase(APITestCase):
 
     def test_post_and_get_file(self):
         """Test for /file/ POST, /file/id/ GET requests."""
-        test_video_file = open(
-            file=self.test_video_path,
-            mode='rb'
-        )
-
-        post_request = requests.post(
-            url=f"{INDEX_URL}/file/",
-            files={'file': test_video_file}
-        )
+        with open(file=self.test_video_path, mode='rb') as test_video_file:
+            post_request = requests.post(
+                url=f"{INDEX_URL}/file/",
+                files={'file': test_video_file}
+            )
 
         test_video_id = json.loads(post_request.content.decode('utf-8')).get('id')
         test_video_id = uuid.UUID(test_video_id)
@@ -45,9 +42,9 @@ class VideoTestCase(APITestCase):
         get_request = requests.get(
             url=f'{INDEX_URL}/file/{test_video_id}'
         )
-        get_repsonse_data = json.loads(get_request.content.decode('utf-8'))
-        get_response_video_id = get_repsonse_data.get('id')
-        get_response_video_filename = get_repsonse_data.get('filename')
+        get_response_data = json.loads(get_request.content.decode('utf-8'))
+        get_response_video_id = get_response_data.get('id')
+        get_response_video_filename = get_response_data.get('filename')
         self.assertEqual(
             first=uuid.UUID(get_response_video_id),
             second=test_video_id,
@@ -58,16 +55,21 @@ class VideoTestCase(APITestCase):
             second=self.test_video_filename,
             msg='Полученное имя файла и заданное не совпадают',
         )
+        self.assertEqual(
+            first=post_request.status_code,
+            second=status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            first=get_request.status_code,
+            second=status.HTTP_200_OK,
+        )
 
     def test_delete_file(self):
-        test_video_file = open(
-            file=self.test_video_path,
-            mode='rb'
-        )
-        post_request = requests.post(
-            url=f"{INDEX_URL}/file/",
-            files={'file': test_video_file}
-        )
+        with open(file=self.test_video_path, mode='rb') as test_video_file:
+            post_request = requests.post(
+                url=f"{INDEX_URL}/file/",
+                files={'file': test_video_file}
+            )
         test_video_id = json.loads(post_request.content.decode('utf-8')).get('id')
         test_video_id = uuid.UUID(test_video_id)
 
@@ -80,4 +82,8 @@ class VideoTestCase(APITestCase):
         self.assertEqual(
             first=bool(delete_response_data.get('success')),
             second=True
+        )
+        self.assertEqual(
+            first=delete_request.status_code,
+            second=status.HTTP_200_OK,
         )
