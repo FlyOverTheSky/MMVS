@@ -2,9 +2,9 @@ from adrf.viewsets import ViewSet
 
 
 import os.path
+import random
 
-from asgiref.sync import sync_to_async
-from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -49,16 +49,17 @@ class VideoViewSet(ViewSet):
             raise ValidationError({'errors': str(error)})
 
         file_name = video.file.name.removeprefix(VIDEO_PATH).removesuffix('.mp4')
-
+        edited_file_code = random.randint(0, 100000)
         await create_process(
             video_dir_path=VIDEO_PATH,
             file_name=file_name,
+            edited_file_code=edited_file_code,
             width=request.data['width'],
             height=request.data['height'],
             initial_video=video
         )
 
-        edited_video_file_name = f"{VIDEO_PATH}{file_name}_{request.data['width']}x{request.data['height']}.mp4"
+        edited_video_file_name = f"{VIDEO_PATH}{edited_file_code}_{request.data['width']}x{request.data['height']}.mp4"
         edited_video = VideoModel(file=edited_video_file_name)
 
         await edited_video.asave()
